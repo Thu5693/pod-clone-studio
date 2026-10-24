@@ -37,7 +37,7 @@ html_code = r"""
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax5/libs/cropperjs/1.5.13/cropper.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <style>
         body {
@@ -64,7 +64,7 @@ html_code = r"""
         <div class="mb-4 bg-[#0d0f1a] border border-[#1d2038] rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2 text-xs text-slate-300">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                <span class="font-bold tracking-wider uppercase">POD AUTO-CLONE & CROP STUDIO (300 DPI)</span>
+                <span class="font-bold tracking-wider uppercase">POD MANUAL CROP & CLONE STUDIO (300 DPI)</span>
             </div>
             <div class="flex items-center gap-2 flex-1 max-w-md">
                 <input id="apiKeyInput" type="password" value="SECRET_KEY_PLACEHOLDER" placeholder="Dán Gemini API Key (AIzaSy...) vào đây..." 
@@ -76,15 +76,15 @@ html_code = r"""
         <!-- Bố cục 2 cột chuẩn POD -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
-            <!-- CỘT TRÁI: THIẾT LẬP, CROP & MẪU -->
+            <!-- CỘT TRÁI: THIẾT LẬP, CROP THỦ CÔNG & MẪU -->
             <div class="bg-[#0c0e1a] border border-[#1c2038] rounded-3xl p-6 flex flex-col justify-between shadow-2xl">
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-2.5">
                             <span class="w-2.5 h-2.5 rounded-full bg-[#5b4eff]"></span>
-                            <h2 class="text-xs font-bold tracking-widest text-slate-300 uppercase">1. TẢI ẢNH & CROP VÙNG IN</h2>
+                            <h2 class="text-xs font-bold tracking-widest text-slate-300 uppercase">1. TẢI ẢNH & CROP THỦ CÔNG</h2>
                         </div>
-                        <button onclick="toggleCropMode()" id="cropBtn" class="text-[11px] bg-[#1a1f38] hover:bg-[#262c4d] text-indigo-300 border border-[#2e3661] px-3 py-1 rounded-lg font-medium transition hidden">✂️ Bật Crop Vùng In</button>
+                        <button onclick="toggleCropMode()" id="cropBtn" class="text-[11px] bg-[#1a1f38] hover:bg-[#262c4d] text-indigo-300 border border-[#2e3661] px-3 py-1 rounded-lg font-medium transition">✂️ Bật Crop Vùng In</button>
                     </div>
 
                     <!-- Bộ chọn Model Gemini -->
@@ -136,17 +136,17 @@ html_code = r"""
                         </label>
                     </div>
 
-                    <!-- Khung xem trước & Crop ảnh -->
-                    <div class="border border-dashed border-[#2c3258] rounded-2xl p-2 bg-[#090b14] flex items-center justify-center min-h-[320px] relative overflow-hidden">
-                        <div class="max-w-full max-h-[310px] overflow-hidden">
+                    <!-- Khung xem trước & Crop ảnh thủ công -->
+                    <div class="border border-dashed border-[#2c3258] rounded-2xl p-2 bg-[#090b14] flex items-center justify-center min-h-[300px] relative overflow-hidden">
+                        <div class="max-w-full max-h-[290px] overflow-hidden">
                             <img id="sourcePreview" src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&q=80" 
-                                crossorigin="anonymous" class="max-h-[300px] object-contain" alt="Mockup Preview">
+                                crossorigin="anonymous" class="max-h-[280px] object-contain" alt="Mockup Preview">
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-4">
-                    <button onclick="triggerAutoClone()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#4e3eff] to-[#6352ff] hover:opacity-95 text-white font-extrabold text-xs tracking-wider uppercase shadow-lg shadow-indigo-600/30 transition">
+                    <button onclick="runCloneProcess()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#4e3eff] to-[#6352ff] hover:opacity-95 text-white font-extrabold text-xs tracking-wider uppercase shadow-lg shadow-indigo-600/30 transition">
                         ✨ TIẾN HÀNH CLONE 1:1 NGAY LẬP TỨC
                     </button>
                 </div>
@@ -171,7 +171,7 @@ html_code = r"""
                         <canvas id="resultCanvas" class="max-h-[420px] max-w-full object-contain rounded-lg"></canvas>
                         <div id="loadingOverlay" class="hidden absolute inset-0 bg-black/80 flex flex-col items-center justify-center gap-3">
                             <div class="w-9 h-9 border-4 border-[#5b4eff] border-t-transparent rounded-full animate-spin"></div>
-                            <p id="loadingText" class="text-xs text-indigo-300 font-semibold">Đang tự động chuẩn hóa nền & duỗi thẳng chữ...</p>
+                            <p id="loadingText" class="text-xs text-indigo-300 font-semibold">Đang xử lý tách nền & chuẩn hóa typography...</p>
                         </div>
                     </div>
 
@@ -183,7 +183,7 @@ html_code = r"""
                 </div>
 
                 <div class="mt-5 text-center">
-                    <p class="text-[11px] text-slate-400">💡 Mẹo: Hệ thống tự động đồng nhất nền tuyệt đối theo màu gốc để tách nền DTF/DTG hoàn hảo.</p>
+                    <p class="text-[11px] text-slate-400">💡 Hướng dẫn: Bấm "Bật Crop Vùng In" -> Kéo chọn vùng áo -> Bấm "Xác nhận" -> Bấm nút Clone.</p>
                 </div>
             </div>
 
@@ -204,9 +204,6 @@ html_code = r"""
         sourceImg.onload = () => {
             drawToCanvas(sourceImg);
             initCropper();
-            document.getElementById('cropBtn').classList.remove('hidden');
-            // Tự động kích hoạt Clone ngay khi tải ảnh lên thành công
-            setTimeout(() => { triggerAutoClone(); }, 600);
         };
 
         function initCropper() {
@@ -216,7 +213,7 @@ html_code = r"""
             cropper = new Cropper(sourceImg, {
                 aspectRatio: NaN,
                 viewMode: 1,
-                autoCropArea: 0.85,
+                autoCropArea: 0.9,
                 responsive: true,
             });
             cropper.disable();
@@ -229,7 +226,7 @@ html_code = r"""
             if (!isCropping) {
                 cropper.enable();
                 isCropping = true;
-                btn.innerText = '✅ Xác nhận vùng Crop';
+                btn.innerText = '✅ Xác nhận Vùng Crop';
                 btn.className = 'text-[11px] bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 px-3 py-1 rounded-lg font-bold transition';
             } else {
                 const croppedCanvas = cropper.getCroppedCanvas();
@@ -240,7 +237,7 @@ html_code = r"""
                 isCropping = false;
                 btn.innerText = '✂️ Bật Crop Vùng In';
                 btn.className = 'text-[11px] bg-[#1a1f38] hover:bg-[#262c4d] text-indigo-300 border border-[#2e3661] px-3 py-1 rounded-lg font-medium transition';
-                setTimeout(() => { initCropper(); triggerAutoClone(); }, 300);
+                setTimeout(() => { initCropper(); }, 200);
             }
         }
 
@@ -329,10 +326,10 @@ html_code = r"""
             link.click();
         }
 
-        async function triggerAutoClone() {
+        async function runCloneProcess() {
             const apiKey = document.getElementById('apiKeyInput').value.trim();
             if (!apiKey) {
-                alert('Vui lòng dán Gemini API Key ở thanh trên cùng để sử dụng tính năng tự động Clone!');
+                alert('Vui lòng dán Gemini API Key ở thanh trên cùng để sử dụng tính năng Clone!');
                 return;
             }
 
@@ -347,11 +344,6 @@ html_code = r"""
                     if (croppedCanvas) activeImgSrc = croppedCanvas.toDataURL('image/jpeg');
                 }
 
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = sourceImg.naturalWidth || 800;
-                tempCanvas.height = sourceImg.naturalHeight || 800;
-                const tCtx = tempCanvas.getContext('2d');
-                
                 const imgObj = new Image();
                 imgObj.crossOrigin = 'anonymous';
                 await new Promise((resolve, reject) => {
@@ -359,12 +351,15 @@ html_code = r"""
                     imgObj.onerror = reject;
                     imgObj.src = activeImgSrc;
                 });
+
+                const tempCanvas = document.createElement('canvas');
                 tempCanvas.width = imgObj.naturalWidth;
                 tempCanvas.height = imgObj.naturalHeight;
+                const tCtx = tempCanvas.getContext('2d');
                 tCtx.drawImage(imgObj, 0, 0);
                 const base64Data = tempCanvas.toDataURL('image/jpeg', 0.9).split(',')[1];
 
-                loadingText.innerText = 'Bước 1/2: Gemini AI đang chuẩn hóa nền & duỗi thẳng chữ...';
+                loadingText.innerText = 'Bước 1/2: Gemini AI đang bóc tách artwork & chuẩn hóa typography...';
 
                 const visionRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey, {
                     method: 'POST',
@@ -372,7 +367,7 @@ html_code = r"""
                     body: JSON.stringify({
                         contents: [{
                             parts: [
-                                { text: 'Analyze this t-shirt mockup print in extreme detail. Strictly extract the core 2D artwork and typography. RULES: 1. Completely remove all shirt wrinkles, fabric textures, stray hairs, and mockup noise. 2. Automatically detect any warped, curved, or tilted text caused by mockup folds and straighten/normalize them into crisp, flat horizontal typography layouts. 3. Isolate everything on a uniform solid absolute black background #000000 matching the original dark tone.' },
+                                { text: 'Strictly analyze this t-shirt print graphic. Extract the exact 2D t-shirt print artwork, character portraits collage, and typography text (e.g. MIKE MACDONALD). RULES: 1. Do NOT generate a single portrait of a woman. Keep all collage characters and text from the graphic. 2. Remove all mockup wrinkles, fabric textures, and background noise. 3. Straighten any warped or curved text into clean flat horizontal layouts. 4. Isolate on a solid absolute black background #000000.' },
                                 { inlineData: { mimeType: 'image/jpeg', data: base64Data } }
                             ]
                         }]
@@ -380,15 +375,15 @@ html_code = r"""
                 });
 
                 const visionJson = await visionRes.json();
-                const detailedPrompt = visionJson?.candidates?.[0]?.content?.parts?.[0]?.text || 'exact 1:1 flat 2D graphic clone';
+                const detailedPrompt = visionJson?.candidates?.[0]?.content?.parts?.[0]?.text || 't-shirt print graphic collage typography';
 
-                loadingText.innerText = 'Bước 2/2: Đang tổng hợp file vector 2D Graphic chuẩn in 300 DPI...';
+                loadingText.innerText = 'Bước 2/2: Đang vẽ lại file vector 2D Graphic chuẩn in 300 DPI...';
 
                 let targetWidth = 4200, targetHeight = 4800;
                 if (currentRes === '1K') { targetWidth = 2100; targetHeight = 2400; }
                 if (currentRes === '2K') { targetWidth = 3150; targetHeight = 3600; }
 
-                const finalPrompt = 'flat 2D t-shirt print graphic, strict 1:1 precise clone, pure solid uniform absolute black background #000000 matching original tone, zero mockup wrinkles, zero stray hair, zero fabric texture noise, all warped or curved text automatically straightened and corrected into clean flat horizontal typography layouts, crisp screenprint vector art, commercial print ready. Details: ' + detailedPrompt;
+                const finalPrompt = 'flat 2D t-shirt print graphic, bootleg rap tee style, collage of photo portraits, bold typography text, pure solid uniform absolute black background #000000, zero mockup wrinkles, crisp screenprint vector art, commercial print ready. Details: ' + detailedPrompt;
                 const encodedPrompt = encodeURIComponent(finalPrompt);
 
                 const seed = Math.floor(Math.random() * 100000);
@@ -421,7 +416,7 @@ html_code = r"""
                 }
 
                 if (!loaded) {
-                    alert('Hệ thống tạo ảnh đang bận. Vui lòng tải lại trang hoặc bấm thử lại sau giây lát!');
+                    alert('Hệ thống tạo ảnh đang bận. Vui lòng bấm "Tiến hành Clone 1:1" lại sau giây lát!');
                 }
                 overlay.classList.add('hidden');
 
