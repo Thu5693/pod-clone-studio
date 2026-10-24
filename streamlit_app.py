@@ -346,4 +346,27 @@ html_code = r"""
                             newImg.onerror = reject;
                             newImg.src = url;
                         });
-                        if
+                        if (loaded) break;
+                    } catch (e) {
+                        continue;
+                    }
+                }
+
+                if (!loaded) {
+                    alert('Hệ thống tạo ảnh đang bận. Vui lòng bấm "Tiến hành Clone 1:1" lại sau vài giây!');
+                }
+                overlay.classList.add('hidden');
+
+            } catch (err) {
+                alert('Lỗi kết nối API: ' + err.message);
+                overlay.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
+"""
+
+html_code = html_code.replace("SECRET_KEY_PLACEHOLDER", secret_api_key)
+
+components.html(html_code, height=920, scrolling=True)
