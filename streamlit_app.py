@@ -63,7 +63,7 @@ html_code = """
         <div class="mb-4 bg-[#0d0f1a] border border-[#1d2038] rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2 text-xs text-slate-300">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                <span class="font-bold tracking-wider uppercase">POD CLONE 1:1 STUDIO (GEMINI AI)</span>
+                <span class="font-bold tracking-wider uppercase">POD CLONE 1:1 STUDIO (GEMINI & IMAGEN 3)</span>
             </div>
             <div class="flex items-center gap-2 flex-1 max-w-md">
                 <input id="apiKeyInput" type="password" value="SECRET_KEY_PLACEHOLDER" placeholder="Dán Gemini API Key (AIzaSy...) vào đây..." 
@@ -344,35 +344,36 @@ html_code = """
                 const detailedPrompt = visionJson?.candidates?.[0]?.content?.parts?.[0]?.text || sysPrompt;
                 document.getElementById('systemPrompt').value = detailedPrompt.substring(0, 220) + '...';
 
-                loadingText.innerText = 'Bước 2/2: Đang vẽ lại 2D Graphic sắc nét trên nền đen chuẩn in...';
+                loadingText.innerText = 'Bước 2/2: Google Imagen 3 đang tái tạo 2D Graphic sắc nét chuẩn in...';
 
-                const genRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${apiKey}`, {
+                // Sử dụng model Imagen 3 chính thức để tạo ảnh chất lượng cao
+                const genRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: `Create a flat 2D t-shirt print graphic isolated on a pure solid black #000000 background (NO t-shirt mockup, NO wrinkles, ONLY the flat 2D artwork): ${detailedPrompt}. ${usrPrompt}` },
-                                { inlineData: { mimeType: 'image/jpeg', data: base64Data } }
-                            ]
-                        }],
-                        generationConfig: { responseModalities: ["TEXT", "IMAGE"] }
+                        instances: [
+                            { prompt: `Create a professional flat 2D t-shirt print graphic isolated on a pure solid black #000000 background (NO t-shirt mockup, NO wrinkles, ONLY the flat 2D artwork): ${detailedPrompt}. ${usrPrompt}` }
+                        ],
+                        parameters: {
+                            sampleCount: 1,
+                            aspectRatio: "1:1"
+                        }
                     })
                 });
 
                 const genJson = await genRes.json();
-                const parts = genJson?.candidates?.[0]?.content?.parts || [];
-                const imgPart = parts.find(p => p.inlineData);
+                const base64Img = genJson?.predictions?.[0]?.bytesBase64Encoded;
 
-                if (imgPart) {
+                if (base64Img) {
                     const newImg = new Image();
                     newImg.onload = () => {
                         drawToCanvas(newImg);
                         overlay.classList.add('hidden');
                     };
-                    newImg.src = 'data:' + imgPart.inlineData.mimeType + ';base64,' + imgPart.inlineData.data;
+                    newImg.src = 'data:image/jpeg;base64,' + base64Img;
                 } else {
-                    alert('Đã phân tích xong Prompt hệ thống! Nếu tài khoản API Key của bạn chưa bật quyền tạo ảnh trực tiếp, hãy kiểm tra lại giới hạn vùng (Region) trong Google AI Studio.');
+                    const errMessage = genJson?.error?.message || 'Không thể tạo ảnh. Vui lòng kiểm tra lại API Key hoặc hạn mức sử dụng (Quota) trên Google AI Studio.';
+                    alert(errMessage);
                     overlay.classList.add('hidden');
                 }
             } catch (err) {
@@ -385,7 +386,6 @@ html_code = """
 </html>
 """
 
-# Đưa API Key vào HTML một cách an toàn tuyệt đối
 html_code = html_code.replace("SECRET_KEY_PLACEHOLDER", secret_api_key)
 
 components.html(html_code, height=920, scrolling=True)
