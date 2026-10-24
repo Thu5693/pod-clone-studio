@@ -63,7 +63,7 @@ html_code = """
         <div class="mb-4 bg-[#0d0f1a] border border-[#1d2038] rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2 text-xs text-slate-300">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                <span class="font-bold tracking-wider uppercase">POD CLONE 1:1 STUDIO (GEMINI & IMAGEN 3)</span>
+                <span class="font-bold tracking-wider uppercase">POD CLONE 1:1 STUDIO (GEMINI VISION + AI GRAPHIC)</span>
             </div>
             <div class="flex items-center gap-2 flex-1 max-w-md">
                 <input id="apiKeyInput" type="password" value="SECRET_KEY_PLACEHOLDER" placeholder="Dán Gemini API Key (AIzaSy...) vào đây..." 
@@ -344,38 +344,25 @@ html_code = """
                 const detailedPrompt = visionJson?.candidates?.[0]?.content?.parts?.[0]?.text || sysPrompt;
                 document.getElementById('systemPrompt').value = detailedPrompt.substring(0, 220) + '...';
 
-                loadingText.innerText = 'Bước 2/2: Google Imagen 3 đang tái tạo 2D Graphic sắc nét chuẩn in...';
+                loadingText.innerText = 'Bước 2/2: Đang tổng hợp và vẽ lại Graphic 2D chuẩn in thương mại...';
 
-                // Sử dụng model Imagen 3 chính thức để tạo ảnh chất lượng cao
-                const genRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        instances: [
-                            { prompt: `Create a professional flat 2D t-shirt print graphic isolated on a pure solid black #000000 background (NO t-shirt mockup, NO wrinkles, ONLY the flat 2D artwork): ${detailedPrompt}. ${usrPrompt}` }
-                        ],
-                        parameters: {
-                            sampleCount: 1,
-                            aspectRatio: "1:1"
-                        }
-                    })
-                });
+                // Sử dụng engine tạo ảnh chuyên biệt qua Prompt được tinh chỉnh từ Gemini Vision
+                const finalPrompt = `flat 2D t-shirt print graphic, isolated on pure solid black background #000000, high resolution vector screenprint art style, ${detailedPrompt}, ${usrPrompt}`;
+                const encodedPrompt = encodeURIComponent(finalPrompt);
+                const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&seed=${Math.floor(Math.random() * 100000)}`;
 
-                const genJson = await genRes.json();
-                const base64Img = genJson?.predictions?.[0]?.bytesBase64Encoded;
-
-                if (base64Img) {
-                    const newImg = new Image();
-                    newImg.onload = () => {
-                        drawToCanvas(newImg);
-                        overlay.classList.add('hidden');
-                    };
-                    newImg.src = 'data:image/jpeg;base64,' + base64Img;
-                } else {
-                    const errMessage = genJson?.error?.message || 'Không thể tạo ảnh. Vui lòng kiểm tra lại API Key hoặc hạn mức sử dụng (Quota) trên Google AI Studio.';
-                    alert(errMessage);
+                const newImg = new Image();
+                newImg.crossOrigin = 'anonymous';
+                newImg.onload = () => {
+                    drawToCanvas(newImg);
                     overlay.classList.add('hidden');
-                }
+                };
+                newImg.onerror = () => {
+                    alert('Không thể tải ảnh kết quả. Vui lòng thử lại!');
+                    overlay.classList.add('hidden');
+                };
+                newImg.src = imageUrl;
+
             } catch (err) {
                 alert('Lỗi kết nối API: ' + err.message);
                 overlay.classList.add('hidden');
