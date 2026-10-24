@@ -29,7 +29,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-html_code = """
+html_code = r"""
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -265,4 +265,85 @@ html_code = """
             const link = document.createElement('a');
             let w = 4200, h = 4800;
             if (currentRes === '1K') { w = 2100; h = 2400; }
-            if (currentRes === '2K') { w = 3150; h =
+            if (currentRes === '2K') { w = 3150; h = 3600; }
+            
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = w;
+            exportCanvas.height = h;
+            const eCtx = exportCanvas.getContext('2d');
+            eCtx.drawImage(canvas, 0, 0, w, h);
+
+            link.download = 'pod-graphic-' + currentRes + '-' + w + 'x' + h + '-300dpi.png';
+            link.href = exportCanvas.toDataURL('image/png');
+            link.click();
+        }
+
+        async function runCloneProcess() {
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+            if (!apiKey) {
+                alert('Vui lòng dán Gemini API Key ở thanh trên cùng trước khi chạy!');
+                return;
+            }
+
+            const overlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            overlay.classList.remove('hidden');
+
+            try {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = sourceImg.naturalWidth || 800;
+                tempCanvas.height = sourceImg.naturalHeight || 800;
+                tempCanvas.getContext('2d').drawImage(sourceImg, 0, 0);
+                const base64Data = tempCanvas.toDataURL('image/jpeg', 0.9).split(',')[1];
+
+                loadingText.innerText = 'Bước 1/2: Gemini Vision đang bóc tách chi tiết & khử bỏ nếp nhăn mockup...';
+
+                const visionRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: 'Analyze this t-shirt mockup graphic in extreme detail. Strictly identify and extract the core 2D print artwork and typography. MANDATORY RULES: Remove all shirt wrinkles, fabric textures, stray hairs, and mockup noise. Automatically detect any warped or curved text caused by mockup folds and straighten/normalize them into crisp, flat horizontal typography layouts. Isolate everything on a uniform solid absolute black background #000000.' },
+                                { inlineData: { mimeType: 'image/jpeg', data: base64Data } }
+                            ]
+                        }]
+                    })
+                });
+
+                const visionJson = await visionRes.json();
+                const detailedPrompt = visionJson?.candidates?.[0]?.content?.parts?.[0]?.text || 'exact 1:1 flat 2D graphic clone';
+
+                loadingText.innerText = 'Bước 2/2: Đang tổng hợp file 2D Graphic chuẩn in...';
+
+                let targetWidth = 4200, targetHeight = 4800;
+                if (currentRes === '1K') { targetWidth = 2100; targetHeight = 2400; }
+                if (currentRes === '2K') { targetWidth = 3150; targetHeight = 3600; }
+
+                const finalPrompt = 'flat 2D t-shirt print graphic, strict 1:1 precise clone, pure solid uniform absolute black background #000000, zero mockup wrinkles, zero stray hair, zero fabric texture noise, all warped or curved text automatically straightened and corrected into clean flat horizontal typography layouts, crisp screenprint vector art, commercial print ready. Details: ' + detailedPrompt;
+                const encodedPrompt = encodeURIComponent(finalPrompt);
+
+                const seed = Math.floor(Math.random() * 100000);
+                const imageUrls = [
+                    'https://image.pollinations.ai/prompt/' + encodedPrompt + '?width=' + targetWidth + '&height=' + targetHeight + '&nologo=true&seed=' + seed,
+                    'https://pollinations.ai/p/' + encodedPrompt + '?width=' + targetWidth + '&height=' + targetHeight + '&nologo=true&seed=' + seed
+                ];
+
+                let loaded = false;
+                for (let url of imageUrls) {
+                    try {
+                        await new Promise((resolve, reject) => {
+                            const newImg = new Image();
+                            newImg.crossOrigin = 'anonymous';
+                            newImg.onload = () => {
+                                canvas.width = targetWidth;
+                                canvas.height = targetHeight;
+                                ctx.drawImage(newImg, 0, 0, targetWidth, targetHeight);
+                                originalImageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+                                loaded = true;
+                                resolve();
+                            };
+                            newImg.onerror = reject;
+                            newImg.src = url;
+                        });
+                        if
