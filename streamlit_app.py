@@ -8,7 +8,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Tự động lấy API Key từ mục Secrets của Streamlit
 secret_api_key = ""
 try:
     secret_api_key = st.secrets.get("GEMINI_API_KEY", "")
@@ -59,11 +58,10 @@ html_code = """
 </head>
 <body>
     <div class="max-w-7xl mx-auto">
-        <!-- Thanh nhập API Key nhanh nếu chưa cài trong Secrets -->
         <div class="mb-4 bg-[#0d0f1a] border border-[#1d2038] rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2 text-xs text-slate-300">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                <span class="font-bold tracking-wider uppercase">POD CLONE 1:1 STUDIO (GEMINI VISION + AI GRAPHIC)</span>
+                <span class="font-bold tracking-wider uppercase">POD CLONE 1:1 STUDIO (FIXED TYPOGRAPHY)</span>
             </div>
             <div class="flex items-center gap-2 flex-1 max-w-md">
                 <input id="apiKeyInput" type="password" value="SECRET_KEY_PLACEHOLDER" placeholder="Dán Gemini API Key (AIzaSy...) vào đây..." 
@@ -72,10 +70,7 @@ html_code = """
             </div>
         </div>
 
-        <!-- Bố cục 2 cột chuẩn 1:1 theo hình mẫu -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            <!-- CỘT TRÁI: THIẾT LẬP CLONE 1:1 -->
             <div class="bg-[#0c0e1a] border border-[#1c2038] rounded-3xl p-6 flex flex-col justify-between shadow-2xl">
                 <div>
                     <div class="flex items-center gap-2.5 mb-5">
@@ -83,7 +78,6 @@ html_code = """
                         <h2 class="text-xs font-bold tracking-widest text-slate-300 uppercase">THIẾT LẬP CLONE 1:1</h2>
                     </div>
 
-                    <!-- Bộ chọn Model: GEMINI 3.8 FLASH & GEMINI 3 PRO -->
                     <div class="grid grid-cols-2 gap-3.5 mb-6">
                         <div id="modelFlash" onclick="selectModel('flash')" class="cursor-pointer rounded-2xl p-4 border border-[#232742] bg-[#111322] transition-all">
                             <div class="flex items-center justify-between mb-2">
@@ -102,7 +96,6 @@ html_code = """
                         </div>
                     </div>
 
-                    <!-- Độ phân giải: 1K / 2K / 4K -->
                     <div class="mb-5">
                         <label class="block text-[10px] font-bold tracking-widest text-slate-400 uppercase mb-2.5">CHẤT LƯỢNG VẼ (RESOLUTION)</label>
                         <div class="grid grid-cols-3 gap-3">
@@ -121,7 +114,6 @@ html_code = """
                         </div>
                     </div>
 
-                    <!-- Dán link ảnh hoặc tải file -->
                     <div class="flex gap-2 mb-5">
                         <input id="imgUrlInput" type="text" placeholder="Dán link ảnh (Etsy, Google...) vào đây" 
                             class="flex-1 bg-[#111322] border border-[#222640] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#5b4eff]">
@@ -132,14 +124,12 @@ html_code = """
                         </label>
                     </div>
 
-                    <!-- Khung hiển thị ảnh áo mẫu -->
                     <div class="border border-dashed border-[#2c3258] rounded-2xl p-3 bg-[#090b14] flex items-center justify-center min-h-[380px] relative overflow-hidden">
                         <img id="sourcePreview" src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&q=80" 
                             crossorigin="anonymous" class="max-h-[370px] rounded-xl object-contain" alt="Mockup Preview">
                     </div>
                 </div>
 
-                <!-- 4 Chế độ POD -->
                 <div class="flex flex-wrap gap-2.5 mt-5 pt-3 border-t border-[#181c33]">
                     <button id="mode_clone" onclick="selectMode('clone')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-[#5b4eff] text-white">Clone 1:1</button>
                     <button id="mode_text" onclick="selectMode('text')" class="px-4 py-1.5 rounded-full text-xs font-semibold bg-[#15182b] text-slate-300 border border-[#252a48]">Đổi Chữ</button>
@@ -148,7 +138,6 @@ html_code = """
                 </div>
             </div>
 
-            <!-- CỘT PHẢI: KẾT QUẢ 2D GRAPHIC -->
             <div class="bg-[#0c0e1a] border border-[#1c2038] rounded-3xl p-6 flex flex-col justify-between shadow-2xl">
                 <div>
                     <div class="flex items-center justify-between mb-4">
@@ -162,7 +151,6 @@ html_code = """
                         </div>
                     </div>
 
-                    <!-- Khung Canvas hiển thị kết quả 2D -->
                     <div id="resultContainer" class="rounded-2xl bg-black border border-[#1e223d] flex items-center justify-center min-h-[430px] p-4 relative overflow-hidden">
                         <canvas id="resultCanvas" class="max-h-[410px] max-w-full object-contain rounded-lg"></canvas>
                         <div id="loadingOverlay" class="hidden absolute inset-0 bg-black/80 flex flex-col items-center justify-center gap-3">
@@ -171,22 +159,20 @@ html_code = """
                         </div>
                     </div>
 
-                    <!-- Thanh trượt tinh chỉnh độ sạch nền đen -->
                     <div class="mt-3 flex items-center justify-between bg-[#101324] px-3.5 py-2 rounded-xl border border-[#1d2240]">
                         <span class="text-[11px] text-slate-400">Ngưỡng khử nền đen (Knock-out Threshold):</span>
                         <input id="thresholdSlider" type="range" min="0" max="90" value="0" oninput="applyThreshold(this.value)" class="w-40 accent-[#5b4eff]">
                     </div>
                 </div>
 
-                <!-- Khu vực Prompt & Nút Cập Nhật -->
                 <div class="mt-5 space-y-3">
                     <div class="bg-[#111322] border border-[#222640] rounded-xl p-3">
                         <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">MÔ TẢ HỆ THỐNG:</div>
-                        <input id="systemPrompt" type="text" value="strict clone replicate every element precisely flat 2D graphic isolated on pure black background #000000" 
+                        <input id="systemPrompt" type="text" value="bootleg rap tee graphic, massive bold collage text typography, multiple photo portraits inside letters, vintage screenprint style" 
                             class="w-full bg-transparent text-xs text-indigo-300 focus:outline-none">
                     </div>
 
-                    <input id="userPrompt" type="text" placeholder="Nhập yêu cầu sửa thêm (VD: Đổi chữ thành MIKE MACDONALD, giữ nguyên bố cục)..." 
+                    <input id="userPrompt" type="text" placeholder="Nhập yêu cầu sửa thêm (VD: Giữ nguyên tên MIKE MACDONALD)..." 
                         class="w-full bg-[#111322] border border-[#222640] rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#5b4eff]">
 
                     <button onclick="runCloneProcess()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#4e3eff] to-[#6352ff] hover:opacity-95 text-white font-extrabold text-xs tracking-wider uppercase shadow-lg shadow-indigo-600/30 transition">
@@ -194,7 +180,6 @@ html_code = """
                     </button>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -244,10 +229,10 @@ html_code = """
         function selectMode(mode) {
             currentMode = mode;
             const prompts = {
-                clone: 'strict clone replicate every element precisely flat 2D graphic isolated on pure black background #000000',
-                text: 'strict clone graphic layout, replace typography with custom text, crisp edges on pure black #000000',
-                vintage: 'clean vintage bootleg rap tee graphic, distressed screenprint texture isolated on pure black #000000',
-                vector: 'clean sharp vector screenprint graphic, bold outlines, solid vibrant colors on pure black #000000'
+                clone: 'bootleg rap tee graphic, massive bold collage text typography, multiple photo portraits inside letters, vintage screenprint style',
+                text: 'vintage bootleg rap tee typography layout, custom bold lettering with photo collage inside text',
+                vintage: 'distressed bootleg rap tee style graphic, faded screenprint texture, retro collage art',
+                vector: 'clean vector bootleg rap tee graphic, bold outlined text filled with photos'
             };
             document.getElementById('systemPrompt').value = prompts[mode];
             ['clone', 'text', 'vintage', 'vector'].forEach(m => {
@@ -325,7 +310,7 @@ html_code = """
                 const sysPrompt = document.getElementById('systemPrompt').value;
                 const usrPrompt = document.getElementById('userPrompt').value;
 
-                loadingText.innerText = 'Bước 1/2: Gemini Vision đang bóc tách bố cục & kiểu chữ từ áo mẫu...';
+                loadingText.innerText = 'Bước 1/2: Gemini Vision đang bóc tách phong cách áo Rap Tee...';
 
                 const visionRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
@@ -333,7 +318,7 @@ html_code = """
                     body: JSON.stringify({
                         contents: [{
                             parts: [
-                                { text: `Analyze the graphic printed on this shirt in extreme detail so an illustrator can recreate an exact 1:1 flat 2D print file on a solid #000000 black background. Include exact text, font style, colors, character positions, lighting, and effects. System rule: ${sysPrompt}. Extra user edits: ${usrPrompt}` },
+                                { text: `Analyze this bootleg rap tee shirt design in detail. Describe the layout, massive multi-row typography containing portraits inside letters, and color tone. Focus strictly on t-shirt graphic print design style, NOT single portraits. Extra instructions: ${usrPrompt}` },
                                 { inlineData: { mimeType: 'image/jpeg', data: base64Data } }
                             ]
                         }]
@@ -342,12 +327,10 @@ html_code = """
 
                 const visionJson = await visionRes.json();
                 const detailedPrompt = visionJson?.candidates?.[0]?.content?.parts?.[0]?.text || sysPrompt;
-                document.getElementById('systemPrompt').value = detailedPrompt.substring(0, 220) + '...';
 
-                loadingText.innerText = 'Bước 2/2: Đang tổng hợp và vẽ lại Graphic 2D chuẩn in thương mại...';
+                loadingText.innerText = 'Bước 2/2: Đang vẽ lại file in áo 2D Graphic (Bootleg Rap Tee style)...';
 
-                // Sử dụng engine tạo ảnh chuyên biệt qua Prompt được tinh chỉnh từ Gemini Vision
-                const finalPrompt = `flat 2D t-shirt print graphic, isolated on pure solid black background #000000, high resolution vector screenprint art style, ${detailedPrompt}, ${usrPrompt}`;
+                const finalPrompt = `bootleg rap tee t-shirt print graphic, massive bold block typography with multiple photo portraits embedded inside the letters, vintage screenprint aesthetic, isolated on pure solid black background #000000, high contrast, commercial print ready --no photo portrait mockup wrinkles`;
                 const encodedPrompt = encodeURIComponent(finalPrompt);
                 const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&seed=${Math.floor(Math.random() * 100000)}`;
 
