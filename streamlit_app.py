@@ -62,7 +62,7 @@ html_code = """
         <div class="mb-4 bg-[#0d0f1a] border border-[#1d2038] rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2 text-xs text-slate-300">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                <span class="font-bold tracking-wider uppercase">POD PRO CLONE 1:1 (300 DPI ENGINE)</span>
+                <span class="font-bold tracking-wider uppercase">POD PRO CLONE 1:1 (STABLE ENGINE)</span>
             </div>
             <div class="flex items-center gap-2 flex-1 max-w-md">
                 <input id="apiKeyInput" type="password" value="SECRET_KEY_PLACEHOLDER" placeholder="Dán Gemini API Key (AIzaSy...) vào đây..." 
@@ -265,91 +265,4 @@ html_code = """
             const link = document.createElement('a');
             let w = 4200, h = 4800;
             if (currentRes === '1K') { w = 2100; h = 2400; }
-            if (currentRes === '2K') { w = 3150; h = 3600; }
-            
-            // Xuất file đúng kích thước chuẩn in 300 DPI thực tế
-            const exportCanvas = document.createElement('canvas');
-            exportCanvas.width = w;
-            exportCanvas.height = h;
-            const eCtx = exportCanvas.getContext('2d');
-            eCtx.drawImage(canvas, 0, 0, w, h);
-
-            link.download = `pod-graphic-${currentRes}-${w}x{h}-300dpi.png`;
-            link.href = exportCanvas.toDataURL('image/png');
-            link.click();
-        }
-
-        async function runCloneProcess() {
-            const apiKey = document.getElementById('apiKeyInput').value.trim();
-            if (!apiKey) {
-                alert('Vui lòng dán Gemini API Key ở thanh trên cùng trước khi chạy!');
-                return;
-            }
-
-            const overlay = document.getElementById('loadingOverlay');
-            const loadingText = document.getElementById('loadingText');
-            overlay.classList.remove('hidden');
-
-            try {
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = sourceImg.naturalWidth || 800;
-                tempCanvas.height = sourceImg.naturalHeight || 800;
-                tempCanvas.getContext('2d').drawImage(sourceImg, 0, 0);
-                const base64Data = tempCanvas.toDataURL('image/jpeg', 0.9).split(',')[1];
-
-                loadingText.innerText = 'Bước 1/2: Gemini Vision đang bóc tách chi tiết & khử bỏ nếp nhăn mockup...';
-
-                const visionRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: `Analyze this t-shirt mockup graphic in extreme detail. Strictly identify and extract the core 2D print artwork and typography. MANDATORY RULES: Remove all shirt wrinkles, fabric textures, stray hairs, and mockup noise. Automatically detect any warped or curved text caused by mockup folds and straighten/normalize them into crisp, flat horizontal typography layouts. Isolate everything on a uniform solid absolute black background #000000.` },
-                                { inlineData: { mimeType: 'image/jpeg', data: base64Data } }
-                            ]
-                        }]
-                    })
-                });
-
-                const visionJson = await visionRes.json();
-                const detailedPrompt = visionJson?.candidates?.[0]?.content?.parts?.[0]?.text || "exact 1:1 flat 2D graphic clone";
-
-                loadingText.innerText = `Bước 2/2: Đang tổng hợp file 2D Graphic chuẩn in (${currentRes === '4K' ? '4200x4800px 300 DPI' : currentRes})...`;
-
-                let targetWidth = 4200, targetHeight = 4800;
-                if (currentRes === '1K') { targetWidth = 2100; targetHeight = 2400; }
-                if (targetWidth === '2K') { targetWidth = 3150; targetHeight = 3600; }
-
-                const finalPrompt = `flat 2D t-shirt print graphic, strict 1:1 precise clone, pure solid uniform absolute black background #000000, zero mockup wrinkles, zero stray hair, zero fabric texture noise, all warped or curved text automatically straightened and corrected into clean flat horizontal typography layouts, crisp screenprint vector art, commercial print ready. Details: ${detailedPrompt}`;
-                const encodedPrompt = encodeURIComponent(finalPrompt);
-                const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${targetWidth}&height=${targetHeight}&nologo=true&seed=${Math.floor(Math.random() * 100000)}`;
-
-                const newImg = new Image();
-                newImg.crossOrigin = 'anonymous';
-                newImg.onload = () => {
-                    canvas.width = targetWidth;
-                    canvas.height = targetHeight;
-                    ctx.drawImage(newImg, 0, 0, targetWidth, targetHeight);
-                    originalImageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
-                    overlay.classList.add('hidden');
-                };
-                newImg.onerror = () => {
-                    alert('Không thể tải ảnh kết quả. Vui lòng thử lại!');
-                    overlay.classList.add('hidden');
-                };
-                newImg.src = imageUrl;
-
-            } catch (err) {
-                alert('Lỗi kết nối API: ' + err.message);
-                overlay.classList.add('hidden');
-            }
-        }
-    </script>
-</body>
-</html>
-"""
-
-html_code = html_code.replace("SECRET_KEY_PLACEHOLDER", secret_api_key)
-
-components.html(html_code, height=920, scrolling=True)
+            if (currentRes === '2K') { w = 3150; h =
